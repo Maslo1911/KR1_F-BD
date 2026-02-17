@@ -3,8 +3,8 @@ const app = express();
 const port = 3000;
 let products = [
     {id: 1, name: 'Наушники', cost: 5000},
-    {id: 2, name: 'Телефон', age: 30000},
-    {id: 3, name: 'Чехол для телефона', age: 3000},
+    {id: 2, name: 'Телефон', cost: 30000},
+    {id: 3, name: 'Чехол для телефона', cost: 3000},
 ]
 // Middleware для парсинга JSON
 app.use(express.json());
