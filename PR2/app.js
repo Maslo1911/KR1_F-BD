@@ -28,14 +28,18 @@ app.get('/products', (req, res) => {
     });
 app.get('/products/:id', (req, res) => {
         let product = products.find(p => p.id == req.params.id);
-        res.send(JSON.stringify(product));
+        if (product) {
+            res.send(JSON.stringify(product));
+        } else {
+            res.status(404).send('Товар не найден');
+        }
     });
 app.patch('/products/:id', (req, res) => {
         const product = products.find(p => p.id == req.params.id);
         if (product) {
-            const { name, price } = req.body;
+            const { name, cost } = req.body;
             if (name !== undefined) product.name = name;
-            if (price !== undefined) product.price = price;
+            if (cost !== undefined) product.cost = cost;
             res.json(product);
         } else { //если поиск по id провалился, то выводит сообщение
             res.status(404).send('Товар не найден');
