@@ -1,8 +1,68 @@
 const express = require('express');
 const { nanoid } = require('nanoid');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 const cors = require("cors");
 const app = express();
 const port = 3000;
+
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'API управления товарами',
+            version: '1.0.0',
+            description: 'Простое API для управления товарами',
+        },
+        servers: [
+            {
+                url: `http://localhost:${port}`,
+                description: 'Локальный сервер',
+            },
+        ],
+    },
+    apis: ['./app.js'],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Product:
+ *       type: object
+ *       required:
+ *         - name
+ *         - cost
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Автоматически сгенерированный уникальный ID товара
+ *         name:
+ *           type: string
+ *           description: Название товара
+ *         category:
+ *           type: string
+ *           description: Категория товара
+ *         description:
+ *           type: string
+ *           description: Описание товара
+ *         cost:
+ *           type: number
+ *           description: Цена товара
+ *         quantity:
+ *           type: integer
+ *           description: Количество на складе
+ *       example:
+ *         id: "d5fE_S"
+ *         name: "iPhone 15"
+ *         category: "Телефоны"
+ *         description: "Самый приятный и удобный смартфон на рынке"
+ *         cost: 50000
+ *         quantity: 10
+ */
 
 let products = [
     {
@@ -87,6 +147,7 @@ let products = [
     },
 ]
 
+
 app.use(cors({
     origin: "http://localhost:3001",
     methods: ["GET", "POST", "PATCH", "DELETE"],
@@ -122,6 +183,40 @@ app.get('/', (req, res) => {
         res.send('Главная страница');
     });
 // CRUD
+
+/**
+ * @swagger
+ * /products:
+ *   get:
+ *     summary: Возвращает список всех товаров
+ *     tags: [Products]
+ *     responses:
+ *       200:
+ *         description: Список товаров
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Product'
+ *   post:
+ *     summary: Создает новый товар
+ *     tags: [Products]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Product'
+ *     responses:
+ *       201:
+ *         description: Товар успешно создан
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ */
+
 app.post('/products', (req, res) => {
         const { name, cost, category, description, quantity } = req.body;
         const newProduct = {
@@ -138,6 +233,69 @@ app.post('/products', (req, res) => {
 app.get('/products', (req, res) => {
         res.json(products);
     });
+
+/**
+ * @swagger
+ * /products/{id}:
+ *   get:
+ *     summary: Получает товар по ID
+ *     tags: [Products]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID товара
+ *     responses:
+ *       200:
+ *         description: Данные товара
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ *       404:
+ *         description: Товар не найден
+ *
+ *   patch:
+ *     summary: Обновляет данные товара
+ *     tags: [Products]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Product'
+ *     responses:
+ *       200:
+ *         description: Обновленный товар
+ *       400:
+ *         description: Нет данных для обновления
+ *       404:
+ *         description: Товар не найден
+ *
+ *   delete:
+ *     summary: Удаляет товар
+ *     tags: [Products]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *     responses:
+ *       204:
+ *         description: Товар успешно удален
+ *       404:
+ *         description: Товар не найден
+ */
+
 app.get('/products/:id', (req, res) => {
         const id = req.params.id;
         const product = findProductOr404(id, res);
